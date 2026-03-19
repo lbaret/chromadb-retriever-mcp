@@ -1,0 +1,66 @@
+# Tabular Document Retriever MCP
+
+This is a Model Context Protocol (MCP) server that transforms tabular data (CSV/Excel) into Markdown key-value pairs, embeds them into a local vector database ([ChromaDB](https://docs.trychroma.com/)), and provides retrieval tools to contextually answer queries.
+
+It leverages the python `uv` package manager, `mcp` SDK, and FastAPI to optionally expose the server using Server-Sent Events (SSE).
+
+## Features
+
+- **Ingestion**: Parses `.csv` and `.xlsx` files and upserts Markdown-formatted strings into ChromaDB.
+- **Retrieval Engine**: Uses `sentence-transformers/all-MiniLM-L6-v2` locally for exact semantic search.
+- **MCP Server**: Provides three tools exposed over an SSE endpoint:
+  - `retrieve_batch`
+  - `retrieve_single`
+  - `retrieve_by_query`
+- **Dockerization**: Quick spin-up of the Database and the MCP Server together without exposing the raw database to the host machine.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/engine/install/) and Docker Compose.
+- [uv](https://github.com/astral-sh/uv) (for local testing/installation).
+- Python 3.12.12.
+
+---
+
+## 🚀 Running the Stack
+
+To start the server and the ChromaDB vector database locally:
+
+```bash
+docker-compose up -d --build
+```
+This will launch:
+1. **ChromaDB** internally on `chroma-db:8000`.
+2. **MCP Server** accessible externally on `http://localhost:8000/sse`.
+
+## 💾 Ingesting User Data
+
+Before you can search, you need to ingest tabular data into the running ChromaDB instance. 
+
+You can use the built CLI ingestor directly from your host machine. Make sure to map environment variables appropriately to reach your local stack or run it via Docker Compose.
+
+To run the ingestor against a locally running ChromaDB (or inside the container):
+
+```bash
+# First, ensure dependencies are synced
+uv sync
+
+# Run the ingestor (Assuming there's a file `data/my_table.csv`)
+# When interacting with the dockerized ChromeDB, make sure to temporarily expose port 8000 for chroma-db, OR simply just run ingestion locally with local persistence.
+uv run python -m src.ingestor data/my_table.csv
+```
+
+*Note: Since the docker stack makes ChromaDB private, you can either map a port for `chroma-db` in `docker-compose.yml` temporarily, or run a one-off task using docker-compose:*
+
+```bash
+docker-compose exec mcp-app python src/ingestor.py /path/to/mounted/data.csv
+```
+
+## 🛠️ MCP Tools
+
+Once running, any MCP client can connect to `http://localhost:8000` via SSE.
+
+Available tools:
+- **`retrieve_single(row)`**: Top-K search using a single row's markdown string.
+- **`retrieve_batch(rows)`**: Batch retrieval handling a list of markdown row strings.
+- **`retrieve_by_query(query)`**: Free-text query mapped exactly to ChromaDB's search.

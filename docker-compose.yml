@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  mcp-app:
+    build: .
+    ports:
+      - "8000:8000" # Expose ONLY the MCP server port to the host
+    environment:
+      - CHROMA_HOST=chroma-db
+      - CHROMA_PORT=8000
+    depends_on:
+      - chroma-db
+    networks:
+      - mcp-network
+
+  chroma-db:
+    image: chromadb/chroma:latest
+    volumes:
+      - chroma-data:/chroma/chroma
+    # We deliberately do not publish ports for chroma-db to ensure it remains private
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
+
+volumes:
+  chroma-data:

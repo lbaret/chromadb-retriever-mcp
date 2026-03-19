@@ -1,0 +1,17 @@
+# Data
+data/
+chroma_data/
+
+# Logs
+*log.txt
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
