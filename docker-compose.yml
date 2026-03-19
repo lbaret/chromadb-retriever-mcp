@@ -13,11 +13,25 @@ services:
     networks:
       - mcp-network
 
+  ingestion-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - CHROMA_HOST=chroma-db
+      - CHROMA_PORT=8000
+    depends_on:
+      - chroma-db
+    command: ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8080"]
+    networks:
+      - mcp-network
+
   chroma-db:
     image: chromadb/chroma:latest
+    ports:
+      - "8001:8000" # Expose ChromaDB to the host
     volumes:
       - chroma-data:/chroma/chroma
-    # We deliberately do not publish ports for chroma-db to ensure it remains private
     networks:
       - mcp-network
 

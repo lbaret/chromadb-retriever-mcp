@@ -77,3 +77,18 @@ Run the example with:
 ```bash
 uv run python tests/test_client.py
 ```
+
+## 🗄️ Checking ChromaDB Records
+
+You can easily dump the ingested records directly from your local container exposed on port `8001`. A utility script is provided to connect to the database and retrieve all content from the `tabular_data` collection.
+
+Run the script using:
+```bash
+uv run python tests/dump_records.py
+```
+
+Alternatively, you can query the ChromaDB REST API directly using `curl` to list the collections and check the status of your data:
+```bash
+# List all collections
+curl http://localhost:8001/api/v1/collections
+```
