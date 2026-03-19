@@ -62,9 +62,18 @@ docker-compose exec mcp-app python src/ingestor.py /path/to/mounted/data.csv
 
 ## 🛠️ MCP Tools
 
-Once running, any MCP client can connect to `http://localhost:8000` via SSE.
+Once running, any MCP client can connect to `http://localhost:8000/sse` via Server-Sent Events (SSE).
 
 Available tools:
 - **`retrieve_single(row)`**: Top-K search using a single row's markdown string.
 - **`retrieve_batch(rows)`**: Batch retrieval handling a list of markdown row strings.
 - **`retrieve_by_query(query)`**: Free-text query mapped exactly to ChromaDB's search.
+
+## 💻 Local Testing Example
+
+You can test the running MCP server locally using the official Python SDK. First, ensure you have the `mcp` package installed in your environment (`uv pip install mcp` or `uv add mcp`).
+
+Run the example with:
+```bash
+uv run python tests/test_client.py
+```
