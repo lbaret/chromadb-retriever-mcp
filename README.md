@@ -39,7 +39,9 @@ This will launch:
 
 ## 💾 Ingesting User Data
 
-Before you can search, you need to ingest tabular data into the running ChromaDB instance. 
+Before you can search, you need to ingest tabular data into the running ChromaDB instance. There are two ways to ingest data: using the command-line ingestor script or via the HTTP API.
+
+### 1. CLI Ingestor (`src/ingestor.py`)
 
 You can use the built CLI ingestor directly from your host machine. Make sure to map environment variables appropriately to reach your local stack or run it via Docker Compose.
 
@@ -52,6 +54,27 @@ uv sync
 # Run the ingestor (Assuming there's a file `data/my_table.csv`)
 # When interacting with the dockerized ChromeDB, make sure to temporarily expose port 8000 for chroma-db, OR simply just run ingestion locally with local persistence.
 uv run python -m src.ingestor data/my_table.csv
+```
+
+**Filtering Embedded Columns:**
+You can optionally specify which columns from your file should be converted into the embedded document text. By default, all columns are used.
+```bash
+# Embed only the 'title' and 'description' columns
+uv run python -m src.ingestor data/my_table.csv -c title -c description
+```
+
+### 2. HTTP Ingestion API (`src/api.py`)
+
+The application also exposes an ingestion endpoint at `POST /ingest/file`. You can upload `.csv` or `.xlsx` files directly to the server:
+
+```bash
+curl -X POST -F "file=@data/my_table.csv" http://localhost:8000/ingest/file
+```
+
+**Filtering Embedded Columns via API:**
+Just like the CLI, you can filter which columns are embedded by appending the `embed_columns` query parameter:
+```bash
+curl -X POST -F "file=@data/my_table.csv" "http://localhost:8000/ingest/file?embed_columns=title&embed_columns=description"
 ```
 
 *Note: Since the docker stack makes ChromaDB private, you can either map a port for `chroma-db` in `docker-compose.yml` temporarily, or run a one-off task using docker-compose:*

@@ -5,7 +5,7 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 
 logger = logging.getLogger(__name__)
 
-def get_chroma_client():
+def get_chroma_client() -> "chromadb.api.ClientAPI":
     """
     Returns a ChromaDB client. 
     Uses HTTP client if CHROMA_HOST and CHROMA_PORT are provided.
@@ -20,7 +20,7 @@ def get_chroma_client():
         # Fallback to local persistent client (mainly for local testing of ingestor without Docker)
         return chromadb.PersistentClient(path="./chroma_data")
 
-def get_or_create_collection(client, collection_name="tabular_data"):
+def get_or_create_collection(client: "chromadb.api.ClientAPI", collection_name: str = "tabular_data") -> "chromadb.api.models.Collection.Collection":
     """
     Creates or retrieves the ChromaDB collection with the correct embedding function.
     """
@@ -31,7 +31,7 @@ def get_or_create_collection(client, collection_name="tabular_data"):
         embedding_function=emb_fn
     )
 
-def upsert_records(collection, ids, documents, metadatas):
+def upsert_records(collection: "chromadb.api.models.Collection.Collection", ids: list[str], documents: list[str], metadatas: list[dict[str, str]]) -> None:
     """
     Upserts records into ChromaDB collection.
     """

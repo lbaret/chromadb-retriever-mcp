@@ -1,9 +1,10 @@
 import hashlib
 import io
 import logging
+import typing
 
 import pandas as pd
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 
 from src.database import get_chroma_client, get_or_create_collection, upsert_records
 
@@ -14,12 +15,14 @@ app = FastAPI(title="ChromaDB Ingestion API", version="1.0.0")
 
 
 @app.get("/health")
-def health():
+def health() -> dict[str, str]:
     """Simple health-check endpoint."""
     return {"status": "ok"}
 
 
-def _ingest_dataframe(df: pd.DataFrame) -> dict:
+def _ingest_dataframe(
+    df: pd.DataFrame, embed_columns: tuple | list = ()
+) -> dict[str, typing.Any]:
     """
     Process a DataFrame into ChromaDB.
     Returns a summary dict with rows_processed and duplicates_skipped.
@@ -34,7 +37,12 @@ def _ingest_dataframe(df: pd.DataFrame) -> dict:
         if not row_dict:
             continue
 
-        md_lines = [f"{k}: {v}" for k, v in row_dict.items()]
+        if embed_columns:
+            md_lines = [f"{k}: {v}" for k, v in row_dict.items() if k in embed_columns]
+            if not md_lines:
+                continue
+        else:
+            md_lines = [f"{k}: {v}" for k, v in row_dict.items()]
         md_string = "\n".join(md_lines)
 
         row_hash = hashlib.sha256(md_string.encode("utf-8")).hexdigest()
@@ -73,7 +81,9 @@ def _ingest_dataframe(df: pd.DataFrame) -> dict:
 
 
 @app.post("/ingest/file")
-async def ingest_file(file: UploadFile = File(...)):
+async def ingest_file(
+    file: UploadFile = File(...), embed_columns: list[str] = Query(default=[])
+) -> dict[str, typing.Any]:
     """
     Upload a CSV or Excel file to ingest into ChromaDB.
     Returns a JSON summary with the number of rows processed.
@@ -97,7 +107,7 @@ async def ingest_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Failed to read file: {e}")
 
     try:
-        result = _ingest_dataframe(df)
+        result = _ingest_dataframe(df, embed_columns)
     except Exception as e:
         logger.error(f"Ingestion failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {e}")

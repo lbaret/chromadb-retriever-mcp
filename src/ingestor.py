@@ -12,13 +12,15 @@ logger = logging.getLogger(__name__)
 
 @click.command(help="Ingest tabular data to ChromaDB")
 @click.argument("file_path", type=click.Path(exists=True))
-def process_file(file_path: str) -> None:
+@click.option("--embed-columns", "-c", multiple=True, help="Specific columns to include in the embedded document content.")
+def process_file(file_path: str, embed_columns: tuple | list = ()) -> None:
     """
     Reads a CSV or Excel file, processes each row into a markdown string,
     and upserts the data into ChromaDB.
     
     Args:
         file_path (str): The path to the CSV or Excel file to process.
+        embed_columns (tuple | list): List of columns to include in the embedded document content. If empty, all columns are used.
     """
     logger.info(f"Reading file: {file_path}")
     if file_path.endswith('.csv'):
@@ -43,7 +45,12 @@ def process_file(file_path: str) -> None:
             continue
             
         # Create markdown string
-        md_lines = [f"{k}: {v}" for k, v in row_dict.items()]
+        if embed_columns:
+            md_lines = [f"{k}: {v}" for k, v in row_dict.items() if k in embed_columns]
+            if not md_lines:
+                continue # Skip if none of the specified columns are present
+        else:
+            md_lines = [f"{k}: {v}" for k, v in row_dict.items()]
         md_string = "\n".join(md_lines)
         
         # Generate stable ID

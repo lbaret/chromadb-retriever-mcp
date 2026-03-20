@@ -1,9 +1,11 @@
 import logging
+import typing
+
 from src.database import get_chroma_client, get_or_create_collection
 
 logger = logging.getLogger(__name__)
 
-def retrieve(query_string: str, top_k: int = 5):
+def retrieve(query_string: str, top_k: int = 50) -> list[dict[str, typing.Any]]:
     """
     Takes a query string and performs a similarity search against ChromaDB.
     Returns the relevant documents along with their associated metadata.
