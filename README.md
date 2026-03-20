@@ -115,3 +115,16 @@ Alternatively, you can query the ChromaDB REST API directly using `curl` to list
 # List all collections
 curl http://localhost:8001/api/v1/collections
 ```
+
+## ⚙️ Configuration
+
+The MCP Server configuration is defined in `src/server.py` (around line 12). If you need to customize the server name, host address, or port, you can directly modify the `NorthMCPServer` initialization:
+
+```python
+# src/server.py
+mcp = NorthMCPServer("tabular-document-retriever", host="0.0.0.0", port=8000)
+```
+
+- **Name** (`"tabular-document-retriever"`): The identifier for the server. Change this if you want the server to be recognized under a different name by your MCP clients.
+- **Host** (`"0.0.0.0"`): The network interface the server binds to. `0.0.0.0` allows external connections (necessary when running in Docker). You can change it to `127.0.0.1` or `localhost` to restrict connections to the local machine only.
+- **Port** (`8000`): The port the server listens on. If you change this, ensure you also update any corresponding port mapping in your `docker-compose.yml` or client configuration.
