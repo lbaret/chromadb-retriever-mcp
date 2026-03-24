@@ -27,6 +27,14 @@ async def main():
                 )
                 print(f"Result:\n{result}")
 
+                # Test the retrieve_by_query tool with metadata filter
+                print("\nTesting 'retrieve_by_query' tool with 'where' filter...")
+                result_filtered = await session.call_tool(
+                    "retrieve_by_query", 
+                    arguments={"query": "example query", "top_k": 2, "where": {"source": "fake_source"}}
+                )
+                print(f"Result (Filtered):\n{result_filtered}")
+
                 # Test the retrieve_batch tool
                 print("\nTesting 'retrieve_batch' tool...")
                 batch_result = await session.call_tool(

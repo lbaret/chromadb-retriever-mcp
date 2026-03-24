@@ -5,7 +5,7 @@ from src.database import get_chroma_client, get_or_create_collection
 
 logger = logging.getLogger(__name__)
 
-def retrieve(query_string: str, top_k: int = 50) -> list[dict[str, typing.Any]]:
+def retrieve(query_string: str, top_k: int = 50, where: dict[str, typing.Any] | None = None) -> list[dict[str, typing.Any]]:
     """
     Takes a query string and performs a similarity search against ChromaDB.
     Returns the relevant documents along with their associated metadata.
@@ -14,10 +14,14 @@ def retrieve(query_string: str, top_k: int = 50) -> list[dict[str, typing.Any]]:
     collection = get_or_create_collection(client)
     
     # ChromaDB handles the embedding using the specified SentenceTransformer function
-    results = collection.query(
-        query_texts=[query_string],
-        n_results=top_k
-    )
+    query_kwargs = {
+        "query_texts": [query_string],
+        "n_results": top_k
+    }
+    if where:
+        query_kwargs["where"] = where
+        
+    results = collection.query(**query_kwargs)
     
     # Format the results nicely
     matches = []

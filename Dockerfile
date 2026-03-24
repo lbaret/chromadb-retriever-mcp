@@ -2,7 +2,7 @@
 FROM python:3.12.12-slim as builder
 
 # Install uv compiler dependencies
-RUN pip install uv
+RUN apt-get update && apt-get install -y git && pip install uv
 
 WORKDIR /app
 # Copy the dependency files

@@ -87,10 +87,10 @@ docker-compose exec mcp-app python src/ingestor.py /path/to/mounted/data.csv
 
 Once running, any MCP client can connect to `http://localhost:8000/sse` via Server-Sent Events (SSE).
 
-Available tools:
-- **`retrieve_single(row)`**: Top-K search using a single row's markdown string.
-- **`retrieve_batch(rows)`**: Batch retrieval handling a list of markdown row strings.
-- **`retrieve_by_query(query)`**: Free-text query mapped exactly to ChromaDB's search.
+Available tools (all accept an optional `where` parameter for ChromaDB metadata filtering):
+- **`retrieve_single(row, top_k=5, where=None)`**: Top-K search using a single row's markdown string.
+- **`retrieve_batch(rows, top_k=5, where=None)`**: Batch retrieval handling a list of markdown row strings.
+- **`retrieve_by_query(query, top_k=5, where=None)`**: Free-text query mapped exactly to ChromaDB's search.
 
 ## 💻 Local Testing Example
 
@@ -100,6 +100,7 @@ Run the example with:
 ```bash
 uv run python tests/test_client.py
 ```
+*(Note: The test client was recently upgraded to include testing explicit `where` metadata queries into ChromaDB).*
 
 ## 🗄️ Checking ChromaDB Records
 
