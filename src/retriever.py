@@ -1,5 +1,6 @@
 import logging
 import typing
+import os
 
 from src.database import get_chroma_client, get_or_create_collection
 
@@ -10,7 +11,10 @@ def retrieve(query_string: str, top_k: int = 50, where: dict[str, typing.Any] | 
     Takes a query string and performs a similarity search against ChromaDB.
     Returns the relevant documents along with their associated metadata.
     """
-    client = get_chroma_client()
+    client = get_chroma_client(
+        auth_provider=os.getenv("CHROMA_CLIENT_AUTH_PROVIDER"),
+        auth_credentials=os.getenv("CHROMA_CLIENT_AUTH_CREDENTIALS")
+    )
     collection = get_or_create_collection(client)
     
     # ChromaDB handles the embedding using the specified SentenceTransformer function

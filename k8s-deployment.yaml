@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chroma-db
+  labels:
+    app: chroma-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chroma-db
+  template:
+    metadata:
+      labels:
+        app: chroma-db
+    spec:
+      containers:
+      - name: chroma-db
+        image: chromadb/chroma:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: IS_PERSISTENT
+          value: "TRUE"
+        - name: CHROMA_SERVER_AUTH_PROVIDER
+          value: "chromadb.auth.token_authn.TokenAuthenticationServerProvider"
+        - name: CHROMA_SERVER_AUTH_CREDENTIALS
+          valueFrom:
+            secretKeyRef:
+              name: chroma-auth-secret
+              key: auth-token
+              optional: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chroma-db
+spec:
+  selector:
+    app: chroma-db
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-app
+  labels:
+    app: mcp-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-app
+  template:
+    metadata:
+      labels:
+        app: mcp-app
+    spec:
+      containers:
+      - name: mcp-app
+        image: tabular-document-retriever:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CHROMA_HOST
+          value: "chroma-db"
+        - name: CHROMA_PORT
+          value: "8000"
+        - name: CHROMA_CLIENT_AUTH_PROVIDER
+          value: "chromadb.auth.token_authn.TokenAuthClientProvider"
+        - name: CHROMA_CLIENT_AUTH_CREDENTIALS
+          valueFrom:
+            secretKeyRef:
+              name: chroma-auth-secret
+              key: auth-token
+              optional: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-app
+spec:
+  selector:
+    app: mcp-app
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http

@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import os
 
 import click
 import pandas as pd
@@ -66,7 +67,10 @@ def process_file(file_path: str, embed_columns: tuple | list = ()) -> None:
     
     logger.info(f"Processed {len(documents)} rows. Upserting to ChromaDB...")
     
-    client = get_chroma_client()
+    client = get_chroma_client(
+        auth_provider=os.getenv("CHROMA_CLIENT_AUTH_PROVIDER"),
+        auth_credentials=os.getenv("CHROMA_CLIENT_AUTH_CREDENTIALS")
+    )
     collection = get_or_create_collection(client)
     
     # Batch upsert in chunks 

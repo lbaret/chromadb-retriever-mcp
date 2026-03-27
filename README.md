@@ -83,6 +83,29 @@ curl -X POST -F "file=@data/my_table.csv" "http://localhost:8000/ingest/file?emb
 docker-compose exec mcp-app python src/ingestor.py /path/to/mounted/data.csv
 ```
 
+## 🔐 Authentication
+
+ChromaDB authentication can now be configured using environment variables. Both the server and the MCP clients (`src/api.py`, `src/ingestor.py`, and `src/database.py`) respect the following variables:
+
+- `CHROMA_CLIENT_AUTH_PROVIDER`: the authentication provider class (e.g., `chromadb.auth.token_authn.TokenAuthClientProvider`)
+- `CHROMA_CLIENT_AUTH_CREDENTIALS`: the credential/token string
+
+When running ChromaDB in a secure environment, ensure you also configure the server (e.g., via `CHROMA_SERVER_AUTH_PROVIDER` set to `chromadb.auth.token_authn.TokenAuthenticationServerProvider`).
+
+## 🚢 Kubernetes Deployment
+
+You can deploy the full stack to a Kubernetes cluster using the provided `k8s-deployment.yaml` file. This file includes definitions for both the `chroma-db` deployment and the `mcp-app` matching server.
+
+```bash
+# Deploy to your Kubernetes cluster
+kubectl apply -f k8s-deployment.yaml
+
+# Check the status of the deployments
+kubectl get pods
+```
+
+Ensure you configure a valid Kubernetes Secret named `chroma-auth-secret` containing your `auth-token` if you wish to use the token authentication out-of-the-box.
+
 ## 🛠️ MCP Tools
 
 Once running, any MCP client can connect to `http://localhost:8000/sse` via Server-Sent Events (SSE).

@@ -1,11 +1,12 @@
 import os
 import logging
 import chromadb
+import chromadb.config
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 logger = logging.getLogger(__name__)
 
-def get_chroma_client() -> "chromadb.api.ClientAPI":
+def get_chroma_client(auth_provider: str | None = None, auth_credentials: str | None = None) -> "chromadb.api.ClientAPI":
     """
     Returns a ChromaDB client. 
     Uses HTTP client if CHROMA_HOST and CHROMA_PORT are provided.
@@ -14,11 +15,16 @@ def get_chroma_client() -> "chromadb.api.ClientAPI":
     host = os.getenv("CHROMA_HOST", "localhost")
     port = os.getenv("CHROMA_PORT", "")
     
+    settings = chromadb.config.Settings()
+    if auth_provider and auth_credentials:
+        settings.chroma_client_auth_provider = auth_provider
+        settings.chroma_client_auth_credentials = auth_credentials
+    
     if port:
-        return chromadb.HttpClient(host=host, port=port)
+        return chromadb.HttpClient(host=host, port=port, settings=settings)
     else:
         # Fallback to local persistent client (mainly for local testing of ingestor without Docker)
-        return chromadb.PersistentClient(path="./chroma_data")
+        return chromadb.PersistentClient(path="./chroma_data", settings=settings)
 
 def get_or_create_collection(client: "chromadb.api.ClientAPI", collection_name: str = "tabular_data") -> "chromadb.api.models.Collection.Collection":
     """

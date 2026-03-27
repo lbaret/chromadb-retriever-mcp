@@ -1,6 +1,7 @@
 import hashlib
 import io
 import logging
+import os
 import typing
 
 import pandas as pd
@@ -59,7 +60,10 @@ def _ingest_dataframe(
 
     logger.info(f"Processed {len(ids)} unique rows (skipped {duplicates_skipped} duplicates). Upserting...")
 
-    client = get_chroma_client()
+    client = get_chroma_client(
+        auth_provider=os.getenv("CHROMA_CLIENT_AUTH_PROVIDER"),
+        auth_credentials=os.getenv("CHROMA_CLIENT_AUTH_CREDENTIALS")
+    )
     collection = get_or_create_collection(client)
 
     batch_size = 500
