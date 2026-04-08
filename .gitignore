@@ -1,3 +1,9 @@
+# uv lock
+uv.lock
+
+# Notebooks
+notebooks/
+
 # Data
 data/
 chroma_data/
